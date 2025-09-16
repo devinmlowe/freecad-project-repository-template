@@ -1,0 +1,199 @@
+#!/usr/bin/env python3
+"""
+FreeCAD Project Template Initializer
+Creates new FreeCAD project from GitHub template
+"""
+
+import os
+import subprocess
+import sys
+from PySide2 import QtWidgets, QtCore
+import FreeCAD
+import FreeCADGui
+
+class ProjectTemplateDialog(QtWidgets.QDialog):
+    def __init__(self):
+        super().__init__()
+        self.setupUI()
+        
+    def setupUI(self):
+        self.setWindowTitle("New FreeCAD Project from Template")
+        self.setModal(True)
+        self.resize(500, 300)
+        
+        layout = QtWidgets.QVBoxLayout()
+        
+        # Project name
+        layout.addWidget(QtWidgets.QLabel("Project Name:"))
+        self.project_name = QtWidgets.QLineEdit()
+        self.project_name.setPlaceholderText("my-awesome-project")
+        layout.addWidget(self.project_name)
+        
+        # Project location
+        layout.addWidget(QtWidgets.QLabel("Project Location:"))
+        location_layout = QtWidgets.QHBoxLayout()
+        self.project_location = QtWidgets.QLineEdit()
+        self.project_location.setText(os.path.expanduser("~/Projects"))
+        location_layout.addWidget(self.project_location)
+        
+        browse_btn = QtWidgets.QPushButton("Browse")
+        browse_btn.clicked.connect(self.browse_location)
+        location_layout.addWidget(browse_btn)
+        layout.addLayout(location_layout)
+        
+        # Template source
+        layout.addWidget(QtWidgets.QLabel("Template Source:"))
+        self.template_source = QtWidgets.QLineEdit()
+        self.template_source.setText("https://github.com/USERNAME/freecad-project-template.git")
+        self.template_source.setPlaceholderText("Git URL or local path")
+        layout.addWidget(self.template_source)
+        
+        # Options
+        self.setup_git = QtWidgets.QCheckBox("Initialize Git repository")
+        self.setup_git.setChecked(True)
+        layout.addWidget(self.setup_git)
+        
+        self.run_setup = QtWidgets.QCheckBox("Run git-freecad setup script")
+        self.run_setup.setChecked(True)
+        layout.addWidget(self.run_setup)
+        
+        # Buttons
+        buttons = QtWidgets.QHBoxLayout()
+        cancel_btn = QtWidgets.QPushButton("Cancel")
+        cancel_btn.clicked.connect(self.reject)
+        buttons.addWidget(cancel_btn)
+        
+        create_btn = QtWidgets.QPushButton("Create Project")
+        create_btn.clicked.connect(self.create_project)
+        create_btn.setDefault(True)
+        buttons.addWidget(create_btn)
+        layout.addLayout(buttons)
+        
+        # Status
+        self.status = QtWidgets.QTextEdit()
+        self.status.setMaximumHeight(100)
+        self.status.setReadOnly(True)
+        layout.addWidget(self.status)
+        
+        self.setLayout(layout)
+        
+    def browse_location(self):
+        folder = QtWidgets.QFileDialog.getExistingDirectory(
+            self, "Select Project Location", self.project_location.text()
+        )
+        if folder:
+            self.project_location.setText(folder)
+            
+    def log(self, message):
+        self.status.append(message)
+        QtCore.QCoreApplication.processEvents()
+        
+    def create_project(self):
+        project_name = self.project_name.text().strip()
+        if not project_name:
+            QtWidgets.QMessageBox.warning(self, "Error", "Please enter a project name")
+            return
+            
+        base_location = self.project_location.text().strip()
+        template_source = self.template_source.text().strip()
+        
+        if not base_location or not template_source:
+            QtWidgets.QMessageBox.warning(self, "Error", "Please fill all fields")
+            return
+            
+        project_path = os.path.join(base_location, project_name)
+        
+        try:
+            self.log(f"Creating project: {project_name}")
+            
+            # Create project directory
+            os.makedirs(project_path, exist_ok=True)
+            os.chdir(project_path)
+            
+            # Clone or copy template
+            if template_source.startswith(('http', 'git')):
+                self.log("Cloning template repository...")
+                subprocess.run(['git', 'clone', template_source, '.'], check=True)
+                
+                # Remove template's git history
+                if os.path.exists('.git'):
+                    import shutil
+                    shutil.rmtree('.git')
+                    
+            else:
+                self.log("Copying template files...")
+                import shutil
+                shutil.copytree(template_source, project_path, dirs_exist_ok=True)
+                
+            # Update README
+            self.update_readme(project_name, project_path)
+            
+            # Initialize new git repo
+            if self.setup_git.isChecked():
+                self.log("Initializing Git repository...")
+                subprocess.run(['git', 'init'], check=True)
+                subprocess.run(['git', 'add', '.'], check=True)
+                subprocess.run(['git', 'commit', '-m', 'Initial commit from template'], check=True)
+                
+            # Run setup script
+            if self.run_setup.isChecked():
+                setup_script = os.path.join(project_path, 'setup-git-freecad.sh')
+                if os.path.exists(setup_script):
+                    self.log("Running FreeCAD Git setup...")
+                    subprocess.run(['chmod', '+x', setup_script], check=True)
+                    subprocess.run(['bash', setup_script], check=True)
+                    
+            self.log(f"✅ Project created successfully at: {project_path}")
+            
+            # Ask to open project
+            reply = QtWidgets.QMessageBox.question(
+                self, "Project Created", 
+                f"Project created successfully!\n\nOpen project folder?",
+                QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No
+            )
+            
+            if reply == QtWidgets.QMessageBox.Yes:
+                self.open_project_folder(project_path)
+                
+            self.accept()
+            
+        except Exception as e:
+            self.log(f"❌ Error: {str(e)}")
+            QtWidgets.QMessageBox.critical(self, "Error", f"Failed to create project:\n{str(e)}")
+            
+    def update_readme(self, project_name, project_path):
+        """Update README with actual project name"""
+        readme_path = os.path.join(project_path, 'README.md')
+        if os.path.exists(readme_path):
+            with open(readme_path, 'r') as f:
+                content = f.read()
+            
+            # Replace placeholder
+            content = content.replace('[Project Name]', project_name)
+            
+            with open(readme_path, 'w') as f:
+                f.write(content)
+                
+    def open_project_folder(self, project_path):
+        """Open project folder in system file manager"""
+        import platform
+        system = platform.system()
+        
+        if system == "Darwin":  # macOS
+            subprocess.run(['open', project_path])
+        elif system == "Windows":
+            os.startfile(project_path)
+        else:  # Linux
+            subprocess.run(['xdg-open', project_path])
+
+def main():
+    """Main function to show dialog"""
+    if not QtWidgets.QApplication.instance():
+        app = QtWidgets.QApplication([])
+    
+    dialog = ProjectTemplateDialog()
+    dialog.exec_()
+
+# Run the macro
+if __name__ == '__main__':
+    main()

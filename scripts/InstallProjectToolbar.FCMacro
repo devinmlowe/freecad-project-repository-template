@@ -1,0 +1,28 @@
+#!/usr/bin/env python3
+"""
+Install Project Template Toolbar
+Adds "New Project" button to FreeCAD toolbar
+"""
+
+import FreeCAD
+import FreeCADGui
+import os
+
+def install_toolbar():
+    """Install project template toolbar"""
+    
+    # Create custom toolbar
+    toolbar = FreeCADGui.getMainWindow().addToolBar("Project Template")
+    
+    # Add new project action
+    new_project_action = toolbar.addAction("New Project")
+    new_project_action.setToolTip("Create new FreeCAD project from template")
+    
+    # Connect to macro
+    macro_path = os.path.join(FreeCAD.getUserMacroDir(), "ProjectFromTemplate.FCMacro")
+    new_project_action.triggered.connect(lambda: FreeCADGui.runCommand('Std_DlgMacroExecute'))
+    
+    FreeCAD.Console.PrintMessage("Project Template toolbar installed!\n")
+
+# Run installer
+install_toolbar()
