@@ -123,7 +123,12 @@ class ProjectTemplateDialog(QtWidgets.QDialog):
             else:
                 self.log("Copying template files...")
                 import shutil
-                shutil.copytree(template_source, project_path, dirs_exist_ok=True)
+                # Skip .git directory to avoid binary file issues
+                def ignore_patterns(dir, files):
+                    return [f for f in files if f == '.git']
+                
+                shutil.copytree(template_source, project_path, 
+                              dirs_exist_ok=True, ignore=ignore_patterns)
                 
             # Update README
             self.update_readme(project_name, project_path)
@@ -165,13 +170,13 @@ class ProjectTemplateDialog(QtWidgets.QDialog):
         """Update README with actual project name"""
         readme_path = os.path.join(project_path, 'README.md')
         if os.path.exists(readme_path):
-            with open(readme_path, 'r') as f:
+            with open(readme_path, 'r', encoding='utf-8') as f:
                 content = f.read()
             
             # Replace placeholder
             content = content.replace('[Project Name]', project_name)
             
-            with open(readme_path, 'w') as f:
+            with open(readme_path, 'w', encoding='utf-8') as f:
                 f.write(content)
                 
     def open_project_folder(self, project_path):
