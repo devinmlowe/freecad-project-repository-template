@@ -29,6 +29,13 @@ class ProjectTemplateDialog(QtWidgets.QDialog):
         self.project_name.setPlaceholderText("my-awesome-project")
         layout.addWidget(self.project_name)
         
+        # Project description
+        layout.addWidget(QtWidgets.QLabel("Project Description:"))
+        self.project_description = QtWidgets.QTextEdit()
+        self.project_description.setPlaceholderText("Brief description of what this project creates/designs...")
+        self.project_description.setMaximumHeight(80)
+        layout.addWidget(self.project_description)
+        
         # Project location
         layout.addWidget(QtWidgets.QLabel("Project Location:"))
         location_layout = QtWidgets.QHBoxLayout()
@@ -131,7 +138,8 @@ class ProjectTemplateDialog(QtWidgets.QDialog):
                               dirs_exist_ok=True, ignore=ignore_patterns)
                 
             # Update README
-            self.update_readme(project_name, project_path)
+            project_description = self.project_description.toPlainText().strip()
+            self.update_readme(project_name, project_description, project_path)
             
             # Initialize new git repo
             if self.setup_git.isChecked():
@@ -166,15 +174,17 @@ class ProjectTemplateDialog(QtWidgets.QDialog):
             self.log(f"❌ Error: {str(e)}")
             QtWidgets.QMessageBox.critical(self, "Error", f"Failed to create project:\n{str(e)}")
             
-    def update_readme(self, project_name, project_path):
-        """Update README with actual project name"""
+    def update_readme(self, project_name, project_description, project_path):
+        """Update README with actual project name and description"""
         readme_path = os.path.join(project_path, 'README.md')
         if os.path.exists(readme_path):
             with open(readme_path, 'r', encoding='utf-8') as f:
                 content = f.read()
             
-            # Replace placeholder
+            # Replace placeholders
             content = content.replace('[Project Name]', project_name)
+            if project_description:
+                content = content.replace('Brief description of what this project creates/designs.', project_description)
             
             with open(readme_path, 'w', encoding='utf-8') as f:
                 f.write(content)

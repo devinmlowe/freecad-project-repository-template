@@ -33,3 +33,6 @@ renders/
 *.jpg
 !documentation/images/*.png
 !documentation/images/*.jpg
+
+# Claude development files
+CLAUDE.md
