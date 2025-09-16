@@ -3,6 +3,16 @@
 ## Project Overview
 Brief description of what this project creates/designs.
 
+## Git Setup for FreeCAD
+**First time setup on each machine:**
+```bash
+# Make script executable and run
+chmod +x setup-git-freecad.sh
+./setup-git-freecad.sh
+```
+
+This configures Git to handle `.FCStd` files efficiently using zippey and enables meaningful diffs.
+
 ## Files Structure
 - `models/` - Main FreeCAD files (.FCStd)
 - `exports/step/` - STEP files for CAD interoperability  
@@ -31,8 +41,22 @@ Brief description of what this project creates/designs.
 - v1.0 - Initial design
 - v1.1 - Design improvements
 
-## FreeCAD Version
-Designed with FreeCAD [version number]
+## How It Works
+- **zippey**: Efficiently stores FreeCAD files (which are zip files) in Git
+- **zip diff**: Shows meaningful diffs of file contents instead of binary changes
+- Run setup script once per machine for proper Git handling
+
+## Troubleshooting
+- If diffs don't work: Check zippey path in `git config --global --list`
+- If files seem corrupted: Ensure setup script ran successfully on all machines
+- Large files: Consider Git LFS for files >100MB
 
 ## License
-[Your chosen license]
+This work is licensed under [Creative Commons Attribution-NonCommercial 4.0 International License](https://creativecommons.org/licenses/by-nc/4.0/).
+
+You are free to:
+- Share and adapt the material
+
+Under these terms:
+- **Attribution** - Give appropriate credit
+- **NonCommercial** - Not for commercial use

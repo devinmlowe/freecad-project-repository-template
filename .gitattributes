@@ -1,3 +1,11 @@
-*.FCStd filter=lfs diff=lfs merge=lfs -text
+# Git LFS configuration for large binary files
 *.step filter=lfs diff=lfs merge=lfs -text
 *.stl filter=lfs diff=lfs merge=lfs -text
+
+# FreeCAD files - use zippey for efficient storage and zip diff for viewing
+*.FCStd filter=zippey
+*.FCStd diff=zip
+
+# Optional: Apply to other zip-based files if needed
+# *.blend filter=zippey
+# *.blend diff=zip

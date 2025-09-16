@@ -1,0 +1,43 @@
+name: Render FreeCAD Models
+
+on:
+  push:
+    paths:
+      - 'models/*.FCStd'
+  pull_request:
+    paths:
+      - 'models/*.FCStd'
+
+jobs:
+  render:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        lfs: true
+        
+    - name: Install FreeCAD
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y freecad-python3 xvfb
+        
+    - name: Render Models
+      run: |
+        mkdir -p renders
+        for fcstd_file in models/*.FCStd; do
+          if [ -f "$fcstd_file" ]; then
+            filename=$(basename "$fcstd_file" .FCStd)
+            xvfb-run -a freecad -c scripts/render_script.py "$fcstd_file" "renders/${filename}.png"
+          fi
+        done
+        
+    - name: Generate HTML Gallery
+      run: python scripts/generate_gallery.py
+      
+    - name: Deploy to GitHub Pages
+      uses: peaceiris/actions-gh-pages@v3
+      if: github.ref == 'refs/heads/main'
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        publish_dir: ./renders

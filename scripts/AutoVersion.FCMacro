@@ -1,0 +1,31 @@
+import FreeCAD
+import subprocess
+import datetime
+import os
+
+def auto_version_properties():
+    """Auto-populate version control properties"""
+    doc = FreeCAD.ActiveDocument
+    if not doc:
+        return
+    
+    # Get git info if in git repo
+    try:
+        os.chdir(os.path.dirname(doc.FileName))
+        branch = subprocess.check_output(['git', 'rev-parse', '--abbrev-ref', 'HEAD']).decode().strip()
+        commit = subprocess.check_output(['git', 'rev-parse', '--short', 'HEAD']).decode().strip()
+        
+        # Set properties
+        doc.addProperty("App::PropertyString", "Git_Branch", "Version Control")
+        doc.addProperty("App::PropertyString", "Git_Commit", "Version Control") 
+        doc.addProperty("App::PropertyString", "Last_Save", "Version Control")
+        
+        doc.Git_Branch = branch
+        doc.Git_Commit = commit
+        doc.Last_Save = datetime.datetime.now().isoformat()
+        
+    except:
+        pass  # Not in git repo or git not available
+
+# Run on document save
+FreeCAD.addDocumentObserver(auto_version_properties)
