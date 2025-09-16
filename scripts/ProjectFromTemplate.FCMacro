@@ -51,7 +51,7 @@ class ProjectTemplateDialog(QtWidgets.QDialog):
         # Template source
         layout.addWidget(QtWidgets.QLabel("Template Source:"))
         self.template_source = QtWidgets.QLineEdit()
-        self.template_source.setText("https://github.com/USERNAME/freecad-project-template.git")
+        self.template_source.setText("https://github.com/devinmlowe/freecad-project-repository-template.git")
         self.template_source.setPlaceholderText("Git URL or local path")
         layout.addWidget(self.template_source)
         
