@@ -1,0 +1,33 @@
+# FreeCAD backup files
+*.FCStd1
+*.FCStd2
+*.FCStd3
+
+# FreeCAD temporary files
+~$*.FCStd
+*.tmp
+
+# Large mesh exports (unless specifically needed)
+*.obj
+*.ply
+*.3mf
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# IDE files
+.vscode/
+.idea/
+
+# Render outputs
+renders/
+*.png
+*.jpg
+!documentation/images/*.png
+!documentation/images/*.jpg

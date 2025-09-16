@@ -1,0 +1,6 @@
+touch models/.gitkeep
+touch exports/step/.gitkeep
+touch exports/stl/.gitkeep
+touch documentation/.gitkeep
+touch drawings/.gitkeep
+touch scripts/.gitkeep
