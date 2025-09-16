@@ -157,16 +157,20 @@ class ProjectTemplateDialog(QtWidgets.QDialog):
                     subprocess.run(['bash', setup_script], check=True)
                     
             self.log(f"✅ Project created successfully at: {project_path}")
-            
+
+            # Create empty FreeCAD file in models directory
+            self.create_initial_freecad_file(project_name, project_path)
+
             # Ask to open project
             reply = QtWidgets.QMessageBox.question(
-                self, "Project Created", 
-                f"Project created successfully!\n\nOpen project folder?",
+                self, "Project Created",
+                f"Project created successfully!\n\nOpen project folder and initial FreeCAD file?",
                 QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No
             )
-            
+
             if reply == QtWidgets.QMessageBox.Yes:
                 self.open_project_folder(project_path)
+                self.open_initial_freecad_file(project_name, project_path)
                 
             self.accept()
             
@@ -193,13 +197,47 @@ class ProjectTemplateDialog(QtWidgets.QDialog):
         """Open project folder in system file manager"""
         import platform
         system = platform.system()
-        
+
         if system == "Darwin":  # macOS
             subprocess.run(['open', project_path])
         elif system == "Windows":
             os.startfile(project_path)
         else:  # Linux
             subprocess.run(['xdg-open', project_path])
+
+    def create_initial_freecad_file(self, project_name, project_path):
+        """Create an empty FreeCAD file in the models directory"""
+        try:
+            models_dir = os.path.join(project_path, 'models')
+            os.makedirs(models_dir, exist_ok=True)
+
+            # Create new FreeCAD document
+            doc = FreeCAD.newDocument(project_name)
+
+            # Set document properties
+            doc.Label = project_name
+            doc.Comment = f"Main design file for {project_name}"
+
+            # Save the document
+            freecad_file_path = os.path.join(models_dir, f"{project_name}.FCStd")
+            doc.saveAs(freecad_file_path)
+
+            self.log(f"Created initial FreeCAD file: {freecad_file_path}")
+
+        except Exception as e:
+            self.log(f"Warning: Could not create initial FreeCAD file: {str(e)}")
+
+    def open_initial_freecad_file(self, project_name, project_path):
+        """Open the initial FreeCAD file"""
+        try:
+            freecad_file_path = os.path.join(project_path, 'models', f"{project_name}.FCStd")
+            if os.path.exists(freecad_file_path):
+                FreeCAD.openDocument(freecad_file_path)
+                self.log(f"Opened FreeCAD file: {freecad_file_path}")
+            else:
+                self.log(f"Warning: FreeCAD file not found at {freecad_file_path}")
+        except Exception as e:
+            self.log(f"Warning: Could not open FreeCAD file: {str(e)}")
 
 def main():
     """Main function to show dialog"""

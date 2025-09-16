@@ -3,6 +3,47 @@
 ## Project Overview
 Brief description of what this project creates/designs.
 
+## Creating New Projects from Template
+
+### Using FreeCAD Macro (Recommended)
+1. **Install the macro** by copying `scripts/ProjectFromTemplate.FCMacro` to your FreeCAD macro directory:
+   ```bash
+   # macOS
+   cp scripts/ProjectFromTemplate.FCMacro ~/Library/Application\ Support/FreeCAD/Macro/
+
+   # Linux
+   cp scripts/ProjectFromTemplate.FCMacro ~/.local/share/FreeCAD/Macro/
+
+   # Windows
+   copy scripts\ProjectFromTemplate.FCMacro %APPDATA%\FreeCAD\Macro\
+   ```
+
+2. **Run the macro** from FreeCAD (Macro → Macros → ProjectFromTemplate)
+
+3. **Fill out the project details**:
+   - **Project Name**: Your new project name (e.g., "my-robot-arm")
+   - **Project Description**: Brief description of what you're designing
+   - **Project Location**: Where to create the project folder
+   - **Template Source**: Git URL or local path to this template
+
+4. **The macro will automatically**:
+   - Clone/copy the template files
+   - Update README.md with your project name and description
+   - Initialize Git repository (optional)
+   - Run FreeCAD Git setup script (optional)
+   - **Create an empty FreeCAD file** in `models/{project-name}.FCStd`
+   - **Open the new FreeCAD file** for immediate use
+
+### Using GitHub Template Button
+1. Click "Use this template" on the GitHub repository
+2. Create your new repository
+3. Clone locally and run the setup script manually
+
+### Manual Copy
+1. Download/clone this template
+2. Copy to your new project location
+3. Run setup scripts manually
+
 ## Git Setup for FreeCAD
 **First time setup on each machine:**
 ```bash
@@ -29,8 +70,8 @@ This configures Git to handle `.FCStd` files efficiently using zippey and enable
 ## Key Components
 | Component | File | Status |
 |-----------|------|--------|
-| Main Assembly | `models/assembly.FCStd` | ⏳ In Progress |
-| Part 1 | `models/part1.FCStd` | ✅ Complete |
+| Main Design | `models/{project-name}.FCStd` | 📝 Created by template |
+| Additional Parts | `models/part1.FCStd` | ⏳ Add as needed |
 
 ## Manufacturing Notes
 - Material specifications
